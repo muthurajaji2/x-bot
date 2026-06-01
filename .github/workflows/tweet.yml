@@ -2,16 +2,16 @@ name: 🐦 Post DevOps Tweet (@rajaji2)
 
 on:
   schedule:
-    - cron: '30 2 * * *'   # Slot 0 — 08:00 IST  (Project Post)
-    - cron: '30 5 * * *'   # Slot 1 — 11:00 IST  (DevOps Tip)
-    - cron: '30 8 * * *'   # Slot 2 — 14:00 IST  (Hot Take)
-    - cron: '30 11 * * *'  # Slot 3 — 17:00 IST  (Poll / Question)
-    - cron: '30 15 * * *'  # Slot 4 — 21:00 IST  (Relatable Meme)
+    - cron: '30 2 * * *'    # Slot 0 — 08:00 IST  (Project Post)
+    - cron: '30 5 * * *'    # Slot 1 — 11:00 IST  (DevOps Tip)
+    - cron: '30 8 * * *'    # Slot 2 — 14:00 IST  (Hot Take)
+    - cron: '30 11 * * *'   # Slot 3 — 17:00 IST  (Poll / Question)
+    - cron: '30 15 * * *'   # Slot 4 — 21:00 IST  (Relatable Meme)
 
   workflow_dispatch:
     inputs:
       slot:
-        description: 'Tweet slot (0=Project, 1=Tip, 2=HotTake, 3=Poll, 4=Meme)'
+        description: 'Tweet slot (0=Project 1=Tip 2=HotTake 3=Poll 4=Meme)'
         required: true
         default: '0'
         type: choice
@@ -49,11 +49,12 @@ jobs:
             esac
           fi
 
-      - name: 🐦 Post Tweet
+      - name: 🤖 Generate & Post Tweet
         env:
           X_API_KEY:       ${{ secrets.X_API_KEY }}
           X_API_SECRET:    ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN:  ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          CLAUDE_API_KEY:  ${{ secrets.CLAUDE_API_KEY }}
           TWEET_SLOT:      ${{ env.TWEET_SLOT }}
         run: python post_tweet.py
