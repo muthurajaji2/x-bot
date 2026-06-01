@@ -3,41 +3,39 @@
 X (Twitter) Auto-poster for @rajaji2
 DevOps / CI-CD / Cloud niche
 Runs via GitHub Actions 5x daily
+AI: Google Gemini 2.0 Flash (FREE tier — no credit card needed)
 """
 
 import os
-import sys
 import json
 import tweepy
-import anthropic
+import urllib.request
 from datetime import datetime
 
 # ── Credentials from GitHub Secrets ──────────────────────────────────────────
-X_API_KEY            = os.environ["X_API_KEY"]
-X_API_SECRET         = os.environ["X_API_SECRET"]
-X_ACCESS_TOKEN       = os.environ["X_ACCESS_TOKEN"]
-X_ACCESS_SECRET      = os.environ["X_ACCESS_SECRET"]
-CLAUDE_API_KEY       = os.environ["CLAUDE_API_KEY"]
+X_API_KEY        = os.environ["X_API_KEY"]
+X_API_SECRET     = os.environ["X_API_SECRET"]
+X_ACCESS_TOKEN   = os.environ["X_ACCESS_TOKEN"]
+X_ACCESS_SECRET  = os.environ["X_ACCESS_SECRET"]
+GEMINI_API_KEY   = os.environ["GEMINI_API_KEY"]
 
 # ── Tweet slot passed from GitHub Actions (0–4) ───────────────────────────────
 SLOT = int(os.environ.get("TWEET_SLOT", "0"))
 
 # ── DevOps project of the day (rotates by weekday) ───────────────────────────
 PROJECTS = [
-    {"name": "GitHub Actions CI Pipeline",   "stack": "GitHub Actions + Docker",   "tags": "#GitHubActions #CICD #DevOps"},
-    {"name": "Terraform AWS EC2 Setup",      "stack": "Terraform + AWS",            "tags": "#Terraform #AWS #IaC"},
-    {"name": "K8s Zero-Downtime Deploy",     "stack": "Kubernetes + Helm",          "tags": "#Kubernetes #Helm #CloudNative"},
-    {"name": "Docker Multi-Stage Build",     "stack": "Docker",                     "tags": "#Docker #DevOps #Containers"},
-    {"name": "Prometheus + Grafana Stack",   "stack": "Docker Compose + Prometheus","tags": "#Monitoring #Grafana #Observability"},
-    {"name": "ArgoCD GitOps Workflow",       "stack": "ArgoCD + Kubernetes",        "tags": "#GitOps #ArgoCD #CICD"},
-    {"name": "Nginx Reverse Proxy",          "stack": "Nginx + Docker",             "tags": "#Nginx #Docker #DevOps"},
+    {"name": "GitHub Actions CI Pipeline",  "stack": "GitHub Actions + Docker",    "tags": "#GitHubActions #CICD #DevOps"},
+    {"name": "Terraform AWS EC2 Setup",     "stack": "Terraform + AWS",             "tags": "#Terraform #AWS #IaC"},
+    {"name": "K8s Zero-Downtime Deploy",    "stack": "Kubernetes + Helm",           "tags": "#Kubernetes #Helm #CloudNative"},
+    {"name": "Docker Multi-Stage Build",    "stack": "Docker",                      "tags": "#Docker #DevOps #Containers"},
+    {"name": "Prometheus + Grafana Stack",  "stack": "Docker Compose + Prometheus", "tags": "#Monitoring #Grafana #Observability"},
+    {"name": "ArgoCD GitOps Workflow",      "stack": "ArgoCD + Kubernetes",         "tags": "#GitOps #ArgoCD #CICD"},
+    {"name": "Nginx Reverse Proxy",         "stack": "Nginx + Docker",              "tags": "#Nginx #Docker #DevOps"},
 ]
 
-# ── Tweet type config ─────────────────────────────────────────────────────────
+# ── Tweet type prompts ────────────────────────────────────────────────────────
 TWEET_TYPES = [
     {
-        "slot": 0,
-        "time": "08:00 UTC",
         "label": "Project Post",
         "prompt_template": (
             "You are a DevOps educator on X (Twitter) for account @rajaji2.\n"
@@ -50,8 +48,6 @@ TWEET_TYPES = [
         ),
     },
     {
-        "slot": 1,
-        "time": "11:00 UTC",
         "label": "DevOps Tip",
         "prompt_template": (
             "You are a senior DevOps engineer sharing tips on X (Twitter) as @rajaji2.\n"
@@ -62,8 +58,6 @@ TWEET_TYPES = [
         ),
     },
     {
-        "slot": 2,
-        "time": "14:00 UTC",
         "label": "Hot Take",
         "prompt_template": (
             "You are an opinionated DevOps engineer on X (Twitter) as @rajaji2.\n"
@@ -74,8 +68,6 @@ TWEET_TYPES = [
         ),
     },
     {
-        "slot": 3,
-        "time": "17:00 UTC",
         "label": "Poll / Question",
         "prompt_template": (
             "You are a DevOps community builder on X (Twitter) as @rajaji2.\n"
@@ -86,8 +78,6 @@ TWEET_TYPES = [
         ),
     },
     {
-        "slot": 4,
-        "time": "21:00 UTC",
         "label": "Relatable Meme",
         "prompt_template": (
             "You are a DevOps/SRE engineer venting on X (Twitter) as @rajaji2.\n"
@@ -99,7 +89,7 @@ TWEET_TYPES = [
     },
 ]
 
-# ── Rotating topic list ───────────────────────────────────────────────────────
+# ── Rotating topics ───────────────────────────────────────────────────────────
 TOPICS = [
     "Kubernetes resource limits and requests",
     "GitHub Actions caching strategies",
@@ -120,16 +110,14 @@ TOPICS = [
 
 
 def get_today_project():
-    day = datetime.utcnow().weekday()  # 0=Mon … 6=Sun
-    return PROJECTS[day % len(PROJECTS)]
+    return PROJECTS[datetime.utcnow().weekday() % len(PROJECTS)]
 
 
 def get_today_topic():
-    day = datetime.utcnow().timetuple().tm_yday  # day of year
-    return TOPICS[day % len(TOPICS)]
+    return TOPICS[datetime.utcnow().timetuple().tm_yday % len(TOPICS)]
 
 
-def generate_tweet(slot: int) -> str:
+def generate_tweet_gemini(slot: int) -> str:
     project = get_today_project()
     topic   = get_today_topic()
     config  = TWEET_TYPES[slot]
@@ -141,14 +129,25 @@ def generate_tweet(slot: int) -> str:
         topic         = topic,
     )
 
-    claude = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
-    response = claude.messages.create(
-        model      = "claude-sonnet-4-20250514",
-        max_tokens = 300,
-        messages   = [{"role": "user", "content": prompt}],
+    # Gemini 2.0 Flash — free tier, 1500 req/day
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
     )
+    payload = json.dumps({
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 300, "temperature": 0.9},
+    }).encode("utf-8")
 
-    tweet = response.content[0].text.strip().strip('"').strip("'")
+    req = urllib.request.Request(
+        url, data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        data = json.loads(resp.read().decode())
+
+    tweet = data["candidates"][0]["content"]["parts"][0]["text"].strip().strip('"').strip("'")
     return tweet
 
 
@@ -164,18 +163,18 @@ def post_tweet(text: str):
 
 
 def main():
-    print(f"[{datetime.utcnow().isoformat()}] Running slot {SLOT} — {TWEET_TYPES[SLOT]['label']}")
+    label = TWEET_TYPES[SLOT]["label"]
+    print(f"[{datetime.utcnow().isoformat()}] Slot {SLOT} — {label}")
 
-    tweet_text = generate_tweet(SLOT)
-    print(f"Generated tweet ({len(tweet_text)} chars):\n{tweet_text}\n")
+    tweet_text = generate_tweet_gemini(SLOT)
+    print(f"Generated ({len(tweet_text)} chars):\n{tweet_text}\n")
 
     if len(tweet_text) > 280:
-        print("⚠️  Tweet too long, truncating...")
         tweet_text = tweet_text[:277] + "..."
+        print("⚠️  Truncated to 280 chars")
 
     tweet_id = post_tweet(tweet_text)
-    print(f"✅ Posted successfully! Tweet ID: {tweet_id}")
-    print(f"   View at: https://x.com/rajaji2/status/{tweet_id}")
+    print(f"✅ Posted! https://x.com/rajaji2/status/{tweet_id}")
 
 
 if __name__ == "__main__":
