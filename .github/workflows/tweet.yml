@@ -1,21 +1,32 @@
-name: 🐦 Post DevOps Tweet (@rajaji2)
+name: 🐦 Post DevOps Tweet (@rajaji2) — 15 tweets/day
 
 on:
   schedule:
-    - cron: '30 2 * * *'    # Slot 0 — 08:00 IST  (Project Post)
-    - cron: '30 5 * * *'    # Slot 1 — 11:00 IST  (DevOps Tip)
-    - cron: '30 8 * * *'    # Slot 2 — 14:00 IST  (Hot Take)
-    - cron: '30 11 * * *'   # Slot 3 — 17:00 IST  (Poll / Question)
-    - cron: '30 15 * * *'   # Slot 4 — 21:00 IST  (Relatable Meme)
+    # UTC times  |  IST = UTC + 5:30
+    - cron: '0 1  * * *'   # Slot 0  — 06:30 IST  Project Post
+    - cron: '0 2  * * *'   # Slot 1  — 07:30 IST  DevOps Tip 1
+    - cron: '0 3  * * *'   # Slot 2  — 08:30 IST  Hot Take
+    - cron: '0 4  * * *'   # Slot 3  — 09:30 IST  Poll
+    - cron: '0 5  * * *'   # Slot 4  — 10:30 IST  Relatable Meme
+    - cron: '0 6  * * *'   # Slot 5  — 11:30 IST  Tool Spotlight
+    - cron: '0 7  * * *'   # Slot 6  — 12:30 IST  Career Tip
+    - cron: '0 8  * * *'   # Slot 7  — 13:30 IST  Security Tip
+    - cron: '0 9  * * *'   # Slot 8  — 14:30 IST  Cloud Cost Tip
+    - cron: '0 10 * * *'   # Slot 9  — 15:30 IST  Learning Resource
+    - cron: '0 11 * * *'   # Slot 10 — 16:30 IST  DevOps Tip 2
+    - cron: '0 12 * * *'   # Slot 11 — 17:30 IST  Kubernetes Tip
+    - cron: '0 13 * * *'   # Slot 12 — 18:30 IST  Terraform / IaC Tip
+    - cron: '0 15 * * *'   # Slot 13 — 20:30 IST  Motivational
+    - cron: '0 17 * * *'   # Slot 14 — 22:30 IST  Community Question
 
   workflow_dispatch:
     inputs:
       slot:
-        description: 'Tweet slot (0=Project 1=Tip 2=HotTake 3=Poll 4=Meme)'
+        description: 'Slot to post (0–14)'
         required: true
         default: '0'
         type: choice
-        options: ['0', '1', '2', '3', '4']
+        options: ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14']
 
 jobs:
   tweet:
@@ -41,20 +52,31 @@ jobs:
           else
             HOUR=$(date -u +%H)
             case $HOUR in
-              02) echo "TWEET_SLOT=0" >> $GITHUB_ENV ;;
-              05) echo "TWEET_SLOT=1" >> $GITHUB_ENV ;;
-              08) echo "TWEET_SLOT=2" >> $GITHUB_ENV ;;
-              11) echo "TWEET_SLOT=3" >> $GITHUB_ENV ;;
-              *)  echo "TWEET_SLOT=4" >> $GITHUB_ENV ;;
+              01) echo "TWEET_SLOT=0"  >> $GITHUB_ENV ;;
+              02) echo "TWEET_SLOT=1"  >> $GITHUB_ENV ;;
+              03) echo "TWEET_SLOT=2"  >> $GITHUB_ENV ;;
+              04) echo "TWEET_SLOT=3"  >> $GITHUB_ENV ;;
+              05) echo "TWEET_SLOT=4"  >> $GITHUB_ENV ;;
+              06) echo "TWEET_SLOT=5"  >> $GITHUB_ENV ;;
+              07) echo "TWEET_SLOT=6"  >> $GITHUB_ENV ;;
+              08) echo "TWEET_SLOT=7"  >> $GITHUB_ENV ;;
+              09) echo "TWEET_SLOT=8"  >> $GITHUB_ENV ;;
+              10) echo "TWEET_SLOT=9"  >> $GITHUB_ENV ;;
+              11) echo "TWEET_SLOT=10" >> $GITHUB_ENV ;;
+              12) echo "TWEET_SLOT=11" >> $GITHUB_ENV ;;
+              13) echo "TWEET_SLOT=12" >> $GITHUB_ENV ;;
+              15) echo "TWEET_SLOT=13" >> $GITHUB_ENV ;;
+              17) echo "TWEET_SLOT=14" >> $GITHUB_ENV ;;
+              *)  echo "TWEET_SLOT=0"  >> $GITHUB_ENV ;;
             esac
           fi
 
-      - name: 🤖 Generate & Post Tweet
+      - name: 🤖 Generate & Post
         env:
-          X_API_KEY:       ${{ secrets.X_API_KEY }}
-          X_API_SECRET:    ${{ secrets.X_API_SECRET }}
-          X_ACCESS_TOKEN:  ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
-          CLAUDE_API_KEY:  ${{ secrets.CLAUDE_API_KEY }}
-          TWEET_SLOT:      ${{ env.TWEET_SLOT }}
+          X_API_KEY:      ${{ secrets.X_API_KEY }}
+          X_API_SECRET:   ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:${{ secrets.X_ACCESS_SECRET }}
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          TWEET_SLOT:     ${{ env.TWEET_SLOT }}
         run: python post_tweet.py
