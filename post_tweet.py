@@ -246,11 +246,17 @@ ALL_SLOTS = [SLOT_0_PROJECT, SLOT_1_TIP, SLOT_2_HOTTAKE, SLOT_3_POLL, SLOT_4_MEM
 
 
 def pick_tweet(slot: int) -> str:
-    """Pick today's tweet using day-of-year as index so it rotates daily."""
     pool = ALL_SLOTS[slot]
-    day  = datetime.utcnow().timetuple().tm_yday   # 1-365
+    day  = datetime.utcnow().timetuple().tm_yday
     idx  = (day - 1) % len(pool)
-    return pool[idx]
+    tweet = pool[idx]
+
+    # Unique suffix prevents X duplicate-content block
+    stamp = datetime.utcnow().strftime("%d%b%H%M")  # e.g. 01Jun1747
+    suffix = f" ~{stamp}"
+    if len(tweet) + len(suffix) <= 280:
+        tweet = tweet + suffix
+    return tweet
 
 
 def post_tweet(text: str) -> str:
