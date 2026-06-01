@@ -1,0 +1,44 @@
+name: RSS News Tweet (@rajaji2)
+
+on:
+  schedule:
+    - cron: '0 4 * * *'    # 09:30 IST every morning — prime engagement time
+
+  workflow_dispatch:        # manual trigger for testing
+
+jobs:
+  rss-tweet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write       # to commit rss_posted.json back to repo
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install tweepy
+
+      - name: Run RSS tweet
+        env:
+          X_API_KEY:       ${{ secrets.X_API_KEY }}
+          X_API_SECRET:    ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:  ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          CLAUDE_API_KEY:  ${{ secrets.CLAUDE_API_KEY }}
+        run: python rss_tweet.py
+
+      - name: Save posted URLs back to repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add rss_posted.json
+          git diff --staged --quiet || git commit -m "chore: update rss_posted [skip ci]"
+          git push
