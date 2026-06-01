@@ -1,0 +1,44 @@
+name: Auto-reply to comments (@rajaji2)
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'   # every 2 hours, 24/7
+
+  workflow_dispatch:         # manual trigger for testing
+
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write        # needed to commit replied_ids.json back to repo
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install tweepy
+
+      - name: Run auto-reply
+        env:
+          X_API_KEY:       ${{ secrets.X_API_KEY }}
+          X_API_SECRET:    ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:  ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          CLAUDE_API_KEY:  ${{ secrets.CLAUDE_API_KEY }}
+        run: python auto_reply.py
+
+      - name: Save replied IDs back to repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add replied_ids.json
+          git diff --staged --quiet || git commit -m "chore: update replied_ids [skip ci]"
+          git push
