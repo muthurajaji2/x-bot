@@ -1,27 +1,18 @@
-name: Post DevOps Tweet rajaji2 - 15 tweets per day
+name: Post DevOps Tweet rajaji2 - 6 tweets per day
 
 on:
   schedule:
-    - cron: '0 1 * * *'
-    - cron: '0 2 * * *'
-    - cron: '0 3 * * *'
-    - cron: '0 4 * * *'
-    - cron: '0 5 * * *'
-    - cron: '0 6 * * *'
-    - cron: '0 7 * * *'
-    - cron: '0 8 * * *'
-    - cron: '0 9 * * *'
-    - cron: '0 10 * * *'
-    - cron: '0 11 * * *'
-    - cron: '0 12 * * *'
-    - cron: '0 13 * * *'
-    - cron: '0 15 * * *'
-    - cron: '0 17 * * *'
+    - cron: '0 2  * * *'   # Slot 0 — 07:30 IST  Project Post
+    - cron: '0 5  * * *'   # Slot 1 — 10:30 IST  Poll
+    - cron: '0 8  * * *'   # Slot 2 — 13:30 IST  Relatable Meme
+    - cron: '0 11 * * *'   # Slot 3 — 16:30 IST  Career Tip
+    - cron: '0 14 * * *'   # Slot 4 — 19:30 IST  Motivational
+    - cron: '0 16 * * *'   # Slot 5 — 21:30 IST  Community Question
 
   workflow_dispatch:
     inputs:
       slot:
-        description: 'Slot to post (0-14)'
+        description: 'Slot to post (0=Project, 1=Poll, 2=Meme, 3=Career, 4=Motivational, 5=Question)'
         required: true
         default: '0'
         type: choice
@@ -32,15 +23,6 @@ on:
           - '3'
           - '4'
           - '5'
-          - '6'
-          - '7'
-          - '8'
-          - '9'
-          - '10'
-          - '11'
-          - '12'
-          - '13'
-          - '14'
 
 jobs:
   tweet:
@@ -60,29 +42,19 @@ jobs:
         run: pip install tweepy
 
       - name: Determine slot
-        id: slot
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "TWEET_SLOT=${{ github.event.inputs.slot }}" >> $GITHUB_ENV
           else
             HOUR=$(date -u +%H | sed 's/^0//')
             case $HOUR in
-              1)  echo "TWEET_SLOT=0"  >> $GITHUB_ENV ;;
-              2)  echo "TWEET_SLOT=1"  >> $GITHUB_ENV ;;
-              3)  echo "TWEET_SLOT=2"  >> $GITHUB_ENV ;;
-              4)  echo "TWEET_SLOT=3"  >> $GITHUB_ENV ;;
-              5)  echo "TWEET_SLOT=4"  >> $GITHUB_ENV ;;
-              6)  echo "TWEET_SLOT=5"  >> $GITHUB_ENV ;;
-              7)  echo "TWEET_SLOT=6"  >> $GITHUB_ENV ;;
-              8)  echo "TWEET_SLOT=7"  >> $GITHUB_ENV ;;
-              9)  echo "TWEET_SLOT=8"  >> $GITHUB_ENV ;;
-              10) echo "TWEET_SLOT=9"  >> $GITHUB_ENV ;;
-              11) echo "TWEET_SLOT=10" >> $GITHUB_ENV ;;
-              12) echo "TWEET_SLOT=11" >> $GITHUB_ENV ;;
-              13) echo "TWEET_SLOT=12" >> $GITHUB_ENV ;;
-              15) echo "TWEET_SLOT=13" >> $GITHUB_ENV ;;
-              17) echo "TWEET_SLOT=14" >> $GITHUB_ENV ;;
-              *)  echo "TWEET_SLOT=0"  >> $GITHUB_ENV ;;
+              2)  echo "TWEET_SLOT=0" >> $GITHUB_ENV ;;
+              5)  echo "TWEET_SLOT=1" >> $GITHUB_ENV ;;
+              8)  echo "TWEET_SLOT=2" >> $GITHUB_ENV ;;
+              11) echo "TWEET_SLOT=3" >> $GITHUB_ENV ;;
+              14) echo "TWEET_SLOT=4" >> $GITHUB_ENV ;;
+              16) echo "TWEET_SLOT=5" >> $GITHUB_ENV ;;
+              *)  echo "TWEET_SLOT=0" >> $GITHUB_ENV ;;
             esac
           fi
 
