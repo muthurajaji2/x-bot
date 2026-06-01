@@ -2,14 +2,15 @@
 """
 X (Twitter) Auto-poster for @rajaji2
 DevOps / CI-CD / Cloud niche
-Runs via GitHub Actions 5x daily
-AI: Google Gemini 2.0 Flash (FREE tier — no credit card needed)
+AI: Groq API — FREE, no rate limit issues, ultra fast
+Get free key at: console.groq.com (sign in with Google)
 """
 
 import os
 import json
 import tweepy
 import urllib.request
+import urllib.error
 from datetime import datetime
 
 # ── Credentials from GitHub Secrets ──────────────────────────────────────────
@@ -17,7 +18,7 @@ X_API_KEY        = os.environ["X_API_KEY"]
 X_API_SECRET     = os.environ["X_API_SECRET"]
 X_ACCESS_TOKEN   = os.environ["X_ACCESS_TOKEN"]
 X_ACCESS_SECRET  = os.environ["X_ACCESS_SECRET"]
-GEMINI_API_KEY   = os.environ["GEMINI_API_KEY"]
+GROQ_API_KEY     = os.environ["GROQ_API_KEY"]
 
 # ── Tweet slot passed from GitHub Actions (0–4) ───────────────────────────────
 SLOT = int(os.environ.get("TWEET_SLOT", "0"))
@@ -117,7 +118,7 @@ def get_today_topic():
     return TOPICS[datetime.utcnow().timetuple().tm_yday % len(TOPICS)]
 
 
-def generate_tweet_gemini(slot: int) -> str:
+def generate_tweet(slot: int) -> str:
     project = get_today_project()
     topic   = get_today_topic()
     config  = TWEET_TYPES[slot]
@@ -129,25 +130,39 @@ def generate_tweet_gemini(slot: int) -> str:
         topic         = topic,
     )
 
-    # Gemini 2.0 Flash — free tier, 1500 req/day
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
-    )
+    # Groq API — free tier, 14,400 req/day, ~500 tokens/sec
     payload = json.dumps({
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"maxOutputTokens": 300, "temperature": 0.9},
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a DevOps Twitter content creator. Always return only the tweet text — no quotes, no preamble, no explanation."
+            },
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 300,
+        "temperature": 0.85,
     }).encode("utf-8")
 
     req = urllib.request.Request(
-        url, data=payload,
-        headers={"Content-Type": "application/json"},
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+        },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        data = json.loads(resp.read().decode())
 
-    tweet = data["candidates"][0]["content"]["parts"][0]["text"].strip().strip('"').strip("'")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        print(f"❌ Groq API error {e.code}: {body}")
+        raise
+
+    tweet = data["choices"][0]["message"]["content"].strip().strip('"').strip("'")
     return tweet
 
 
@@ -166,7 +181,7 @@ def main():
     label = TWEET_TYPES[SLOT]["label"]
     print(f"[{datetime.utcnow().isoformat()}] Slot {SLOT} — {label}")
 
-    tweet_text = generate_tweet_gemini(SLOT)
+    tweet_text = generate_tweet(SLOT)
     print(f"Generated ({len(tweet_text)} chars):\n{tweet_text}\n")
 
     if len(tweet_text) > 280:
