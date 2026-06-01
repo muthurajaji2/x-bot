@@ -1,0 +1,67 @@
+name: 🐦 Post DevOps Tweet (@rajaji2)
+
+on:
+  schedule:
+    # All times UTC — adjust if you want IST (subtract 5h30m from IST)
+    - cron: '30 2 * * *'   # Slot 0 — 08:00 IST  (Project Post)
+    - cron: '30 5 * * *'   # Slot 1 — 11:00 IST  (DevOps Tip)
+    - cron: '30 8 * * *'   # Slot 2 — 14:00 IST  (Hot Take)
+    - cron: '30 11 * * *'  # Slot 3 — 17:00 IST  (Poll / Question)
+    - cron: '30 15 * * *'  # Slot 4 — 21:00 IST  (Relatable Meme)
+
+  # Allow manual trigger from GitHub Actions UI (for testing)
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: 'Tweet slot to post (0=Project, 1=Tip, 2=HotTake, 3=Poll, 4=Meme)'
+        required: true
+        default: '0'
+        type: choice
+        options: ['0', '1', '2', '3', '4']
+
+jobs:
+  tweet:
+    name: Post Tweet (Slot ${{ github.event.inputs.slot || 'scheduled' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install dependencies
+        run: pip install tweepy anthropic
+
+      - name: 🧮 Determine tweet slot from cron schedule
+        id: slot
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "TWEET_SLOT=${{ github.event.inputs.slot }}" >> $GITHUB_ENV
+          else
+            # Map current UTC hour to slot
+            HOUR=$(date -u +%H)
+            if [ "$HOUR" = "02" ]; then echo "TWEET_SLOT=0" >> $GITHUB_ENV
+            elif [ "$HOUR" = "05" ]; then echo "TWEET_SLOT=1" >> $GITHUB_ENV
+            elif [ "$HOUR" = "08" ]; then echo "TWEET_SLOT=2" >> $GITHUB_ENV
+            elif [ "$HOUR" = "11" ]; then echo "TWEET_SLOT=3" >> $GITHUB_ENV
+            else echo "TWEET_SLOT=4" >> $GITHUB_ENV
+            fi
+          fi
+
+      - name: 🤖 Generate & Post Tweet
+        env:
+          X_API_KEY:        ${{ secrets.X_API_KEY }}
+          X_API_SECRET:     ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:   ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:  ${{ secrets.X_ACCESS_SECRET }}
+          CLAUDE_API_KEY:   ${{ secrets.CLAUDE_API_KEY }}
+          TWEET_SLOT:       ${{ env.TWEET_SLOT }}
+        run: python post_tweet.py
+
+      - name: ✅ Done
+        run: echo "Tweet posted successfully for @rajaji2 🚀"
