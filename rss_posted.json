@@ -1,7 +1,8 @@
 {
   "urls": [
-    "https://about.gitlab.com/blog/automate-deployment-with-duo-agent-platform/",
-    "https://about.gitlab.com/blog/fine-grained-pats/"
+    "https://about.gitlab.com/blog/gitaly-on-kubernetes-generally-available/",
+    "https://about.gitlab.com/blog/fine-grained-pats/",
+    "https://about.gitlab.com/blog/automate-deployment-with-duo-agent-platform/"
   ],
-  "updated": "2026-06-02T08:12:07.811403"
+  "updated": "2026-06-02T08:25:21.418759"
 }
