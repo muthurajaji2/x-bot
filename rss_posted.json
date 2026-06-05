@@ -1,9 +1,10 @@
 {
   "urls": [
     "https://about.gitlab.com/blog/gitaly-on-kubernetes-generally-available/",
-    "https://about.gitlab.com/blog/fine-grained-pats/",
     "https://about.gitlab.com/blog/gitlab-act-2/",
-    "https://about.gitlab.com/blog/automate-deployment-with-duo-agent-platform/"
+    "https://about.gitlab.com/blog/automate-deployment-with-duo-agent-platform/",
+    "https://about.gitlab.com/blog/fine-grained-pats/",
+    "https://docs.gitlab.com/releases/patches/patch-release-gitlab-18-11-3-released/"
   ],
-  "updated": "2026-06-04T08:16:58.901498"
+  "updated": "2026-06-05T08:03:23.799693"
 }
