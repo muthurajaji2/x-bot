@@ -25,62 +25,133 @@ SLOT = int(os.environ.get("TWEET_SLOT", "0"))
 SLOTS = [
     {
         "label": "Project Post",
-        "prompt": (
-            "You are a DevOps educator tweeting as @rajaji2.\n"
-            "Write ONE engaging tweet (under 260 chars) announcing a hands-on DevOps mini project.\n"
-            "Pick a unique project using GitHub Actions, Terraform, Kubernetes, Docker, ArgoCD, Prometheus, Grafana, Helm, or AWS.\n"
-            "Start with an emoji. End with 2-3 hashtags like #DevOps #CICD #Kubernetes.\n"
-            "Today: {date}. Return ONLY the tweet. No quotes. No explanation."
-        ),
+        "prompt": """You are a DevOps educator tweeting as @rajaji2.
+Write ONE tweet about automating a specific DevOps task using a script or tool.
+Pick ONE unique topic from: PowerShell automation, Bash scripting, Python DevOps scripts,
+Docker setup automation, Kubernetes manifest generation, Terraform provisioning,
+GitHub Actions pipeline, CI/CD deployment script, Nginx config automation,
+AWS CLI automation, Ansible playbook, Helm chart deployment, Linux cron automation,
+Git hooks automation, SonarQube integration, ArgoCD GitOps setup.
+
+STRICT FORMAT - follow this EXACTLY:
+<Action verb> <Tool/Topic> like a DevOps Engineer!
+
+✅ <feature 1>
+✅ <feature 2>
+✅ <feature 3>
+✅ <feature 4>
+✅ <feature 5>
+
+#<tag1> #<tag2> #<tag3> #<tag4> #<tag5> #<tag6> #<tag7> #<tag8>
+
+EXAMPLE OUTPUT:
+Automate MSI Installation using PowerShell like a DevOps Engineer!
+
+✅ Silent Installation
+✅ Error Handling
+✅ Logging
+✅ Exit Code Validation
+✅ Enterprise Deployment Ready
+
+#MSI #Automation #DevOps #WindowsAdmin #Scripting #SysAdmin #AzureDevOps #Jenkins
+
+Today: {date}. Pick a DIFFERENT topic from the example. Return ONLY the tweet. No quotes. No extra text.""",
     },
     {
         "label": "Poll",
-        "prompt": (
-            "You are a DevOps community builder tweeting as @rajaji2.\n"
-            "Write ONE poll (under 260 chars) for DevOps engineers.\n"
-            "Ask a question then list 2-4 options with emoji bullets (🔵 🟢 🟡 🔴).\n"
-            "End with #DevOps. Today: {date}.\n"
-            "Return ONLY the tweet. No quotes. No explanation."
-        ),
+        "prompt": """You are a DevOps community builder tweeting as @rajaji2.
+Write ONE poll tweet for DevOps engineers.
+
+STRICT FORMAT:
+<Engaging question about a DevOps tool/practice?>
+
+🔵 <Option A>
+🟢 <Option B>
+🟡 <Option C>
+🔴 <Option D>
+
+#<tag1> #<tag2> #<tag3> #<tag4>
+
+Topics: CI/CD tools, container orchestration, IaC tools, monitoring stacks, cloud providers, scripting languages.
+Today: {date}. Return ONLY the tweet. No quotes. No explanation.""",
     },
     {
         "label": "Relatable Meme",
-        "prompt": (
-            "You are a DevOps/SRE engineer venting on X as @rajaji2.\n"
-            "Write ONE funny relatable tweet (under 260 chars) about DevOps/SRE life.\n"
-            "Think: on-call, K8s YAML pain, Friday deploys, terraform destroy accidents.\n"
-            "End with 1-2 hashtags like #DevOps #SRE. Today: {date}.\n"
-            "Return ONLY the tweet. No quotes. No explanation."
-        ),
+        "prompt": """You are a DevOps/SRE engineer venting on X as @rajaji2.
+Write ONE funny relatable tweet about DevOps/SRE/Cloud life.
+
+Use Style B format:
+Me: <action>
+<Tool/System>: <unexpected response>
+Me: <reaction>
+
+OR Style C:
+5 stages of <DevOps situation>:
+1. <stage>
+2. <stage>
+3. <stage>
+4. <stage>
+5. <stage>
+
+Topics: on-call at 3am, terraform destroy, YAML indentation, pipeline failing on Friday,
+'works on my machine', kubectl debugging, AWS bill shock, Jenkins flaky builds.
+End with #DevOps #SRE or similar.
+Today: {date}. Return ONLY the tweet. No quotes. No explanation.""",
     },
     {
         "label": "Career Tip",
-        "prompt": (
-            "You are a senior DevOps engineer mentoring others as @rajaji2.\n"
-            "Write ONE career tip (under 260 chars) for aspiring or mid-level DevOps engineers.\n"
-            "Topics: certifications, skills, interview tips, open source, building a portfolio.\n"
-            "Start with 🎯 or 🚀. End with 2 hashtags. Today: {date}.\n"
-            "Return ONLY the tweet. No quotes. No explanation."
-        ),
+        "prompt": """You are a senior DevOps engineer mentoring others as @rajaji2.
+Write ONE career tip tweet for DevOps engineers.
+
+STRICT FORMAT:
+<Bold career tip title> 🎯
+
+✔️ <specific action or skill>
+✔️ <specific action or skill>
+✔️ <specific action or skill>
+✔️ <specific action or skill>
+
+#<tag1> #<tag2> #<tag3> #<tag4> #<tag5>
+
+Topics: CKA/CKS/AWS certifications, GitHub portfolio, open source contributions,
+resume tips, salary negotiation, learning roadmap, side projects, DevOps roadmap 2025.
+Today: {date}. Return ONLY the tweet. No quotes. No explanation.""",
     },
     {
         "label": "Motivational",
-        "prompt": (
-            "You are a DevOps engineer motivating others as @rajaji2.\n"
-            "Write ONE motivational tweet (under 260 chars) for DevOps/Cloud engineers about growth, persistence, or learning.\n"
-            "Make it genuine and specific to the DevOps journey. Start with 💪 or 🌟. End with 1-2 hashtags. Today: {date}.\n"
-            "Return ONLY the tweet. No quotes. No explanation."
-        ),
+        "prompt": """You are a DevOps engineer motivating others as @rajaji2.
+Write ONE motivational tweet for DevOps/Cloud engineers.
+
+STRICT FORMAT:
+<Powerful opening line — a bold statement or challenge>
+
+💪 <action/mindset point 1>
+💪 <action/mindset point 2>
+💪 <action/mindset point 3>
+
+🔥 <closing motivational line>
+
+#<tag1> #<tag2> #<tag3> #<tag4>
+
+Topics: learning DevOps from scratch, imposter syndrome, first DevOps job,
+building in public, never stop learning, open source journey.
+Today: {date}. Return ONLY the tweet. No quotes. No explanation.""",
     },
     {
         "label": "Community Question",
-        "prompt": (
-            "You are a DevOps community builder tweeting as @rajaji2.\n"
-            "Write ONE open-ended question (under 260 chars) to spark discussion among DevOps engineers.\n"
-            "Ask about their workflows, preferences, war stories, or opinions — not a poll, just a genuine question.\n"
-            "Start with 🤔 or 💬. End with #DevOps. Today: {date}.\n"
-            "Return ONLY the tweet. No quotes. No explanation."
-        ),
+        "prompt": """You are a DevOps community builder tweeting as @rajaji2.
+Write ONE open-ended question tweet to spark real discussion.
+
+STRICT FORMAT:
+<Thought-provoking question to the DevOps community?> 🤔
+
+Drop your answer below 👇
+
+#<tag1> #<tag2> #<tag3> #<tag4>
+
+Topics: real war stories, tool preferences, controversial DevOps opinions,
+lessons learned the hard way, what they wish they knew earlier, current stack.
+Today: {date}. Return ONLY the tweet. No quotes. No explanation.""",
     },
 ]
 
@@ -91,7 +162,7 @@ def generate_tweet(slot: int) -> str:
 
     payload = json.dumps({
         "model":      "claude-sonnet-4-6",
-        "max_tokens": 300,
+        "max_tokens": 400,
         "messages":   [{"role": "user", "content": prompt}],
     }).encode("utf-8")
 
@@ -134,6 +205,7 @@ def main():
     tweet = generate_tweet(SLOT)
     print(f"\nTweet ({len(tweet)} chars):\n{tweet}\n")
 
+    # Note: These structured tweets can exceed 280 chars — X allows up to 280
     if len(tweet) > 280:
         tweet = tweet[:277] + "..."
 
