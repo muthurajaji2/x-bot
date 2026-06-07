@@ -1,11 +1,12 @@
 {
   "urls": [
     "https://about.gitlab.com/blog/automate-deployment-with-duo-agent-platform/",
-    "https://about.gitlab.com/blog/fine-grained-pats/",
-    "https://docs.gitlab.com/releases/patches/patch-release-gitlab-18-11-3-released/",
     "https://about.gitlab.com/blog/gitaly-on-kubernetes-generally-available/",
-    "https://about.gitlab.com/blog/gitlab-act-2/",
-    "https://about.gitlab.com/blog/harden-pipeline-perimeter-for-ai-assisted-coding/"
+    "https://docs.gitlab.com/releases/patches/patch-release-gitlab-18-11-3-released/",
+    "https://about.gitlab.com/blog/harden-pipeline-perimeter-for-ai-assisted-coding/",
+    "https://about.gitlab.com/blog/fine-grained-pats/",
+    "https://about.gitlab.com/blog/severity-override-vulnerability-management-policy/",
+    "https://about.gitlab.com/blog/gitlab-act-2/"
   ],
-  "updated": "2026-06-06T06:50:09.487287"
+  "updated": "2026-06-07T07:51:12.810364"
 }
